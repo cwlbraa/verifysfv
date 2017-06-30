@@ -1,39 +1,15 @@
-# sfv
-
-[![Build Status](https://travis-ci.org/mpolden/sfv.svg)](https://travis-ci.org/mpolden/sfv)
-
-sfv is a [Go](http://golang.org) package for verifying
+# verifysfv
+a tiny, fast, almost-always-io-bound tool for verifying 
 [SFV files](https://en.wikipedia.org/wiki/Simple_file_verification).
+Written in [Go](http://golang.org) and adapted from @mpolden's [sfv package](https://github.com/mpolden/sfv)
+to verify any of Golang's supported crc32c polynomials (crc32c, IEEE, or Koopman) in parallel.
 
 ## Installation
 
-`$ go get github.com/mpolden/sfv`
+`$ go install github.com/cwlbraa/verifysfv`
 
 ## Example
 
-```go
-package main
-
-import (
-	"github.com/mpolden/sfv"
-	"log"
-)
-
-func main() {
-	sfv, err := sfv.Read("/path/to/file.sfv")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	ok, err := sfv.Verify()
-	if err != nil {
-		log.Fatal(err)
-	}
-	if ok {
-		log.Print("All files are OK!")
-	}
-	for _, c := range sfv.Checksums {
-		log.Printf("%+v", c)
-	}
-}
+```shell
+verifysfv fileManifest.sfv
 ```
