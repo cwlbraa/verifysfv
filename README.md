@@ -7,7 +7,7 @@ All deps are vendored, so this should build outside of a $GOPATH for any go>=1.7
 
 ## Installation
 
-`$ go install github.com/cwlbraa/verifysfv`
+`go install github.com/cwlbraa/verifysfv`
 
 ## Example
 
