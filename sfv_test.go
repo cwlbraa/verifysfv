@@ -1,4 +1,4 @@
-package sfv
+package verifysfv
 
 import (
 	"bytes"

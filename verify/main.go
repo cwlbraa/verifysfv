@@ -8,9 +8,9 @@ import (
 	"runtime"
 	"sync"
 
-	pb "gopkg.in/cheggaaa/pb.v2"
+	"github.com/cwlbraa/verifysfv"
 
-	"github.com/mpolden/sfv"
+	pb "gopkg.in/cheggaaa/pb.v2"
 )
 
 func main() {
@@ -18,14 +18,14 @@ func main() {
 		fmt.Println("please provide an sfv file to verify")
 	}
 	sfvFilepath := os.Args[1]
-	parsed, err := sfv.Read(sfvFilepath)
+	parsed, err := verifysfv.Read(sfvFilepath)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	count := len(parsed.Checksums)
 	bar := pb.StartNew(count)
-	checksums := make(chan sfv.Checksum, count)
+	checksums := make(chan verifysfv.Checksum, count)
 	errs := make(chan error, count) // nil errors indicate success
 	var wg sync.WaitGroup
 	for i := 0; i < runtime.NumCPU(); i++ {

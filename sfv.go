@@ -1,6 +1,6 @@
 // Package sfv provides a simple way of reading and verifying SFV (Simple File
 // Verification) files.
-package sfv
+package verifysfv
 
 import (
 	"bufio"
