@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync/atomic"
 )
 
 // Checksum represents a line in a SFV file, containing the filename, full path
@@ -29,6 +30,16 @@ type SFV struct {
 	Path      string
 }
 
+var bufSize uint64 = 4096
+
+func SetBufSize(bs int) {
+	atomic.SwapUint64(&bufSize, uint64(bs))
+}
+
+func GetBufSize() uint64 {
+	return atomic.LoadUint64(&bufSize)
+}
+
 // Verify calculates the CRC32 of the associated file and returns true if the
 // checksum is correct along with the calculated checksum
 func (c *Checksum) Verify(polynomial uint32) (bool, uint32, error) {
@@ -40,7 +51,7 @@ func (c *Checksum) Verify(polynomial uint32) (bool, uint32, error) {
 
 	h := crc32.New(crc32.MakeTable(polynomial))
 	reader := bufio.NewReader(f)
-	buf := make([]byte, 4096)
+	buf := make([]byte, bufSize)
 	for {
 		n, err := reader.Read(buf)
 		if err != nil && err != io.EOF {
