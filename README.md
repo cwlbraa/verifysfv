@@ -12,7 +12,7 @@ All deps are vendored, so this should build outside of a $GOPATH for any go>=1.7
 ## Example
 
 ```shell
-# to verify an crc32c.sfv file:
+# to verify a crc32c.sfv file:
 verifysfv fileManifest.sfv
 # for more options:
 verifysfv -h
