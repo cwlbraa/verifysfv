@@ -30,28 +30,30 @@ type SFV struct {
 }
 
 // Verify calculates the CRC32 of the associated file and returns true if the
-// checksum is correct.
-func (c *Checksum) Verify() (bool, error) {
+// checksum is correct along with the calculated checksum
+func (c *Checksum) Verify(polynomial uint32) (bool, uint32, error) {
 	f, err := os.Open(c.Path)
 	if err != nil {
-		return false, err
+		return false, 0, err
 	}
 	defer f.Close()
 
-	h := crc32.NewIEEE()
+	h := crc32.New(crc32.MakeTable(polynomial))
 	reader := bufio.NewReader(f)
 	buf := make([]byte, 4096)
 	for {
 		n, err := reader.Read(buf)
 		if err != nil && err != io.EOF {
-			return false, err
+			return false, 0, err
 		}
 		if n == 0 {
 			break
 		}
 		h.Write(buf[:n])
 	}
-	return h.Sum32() == c.CRC32, nil
+	result := h.Sum32()
+
+	return result == c.CRC32, result, nil
 }
 
 // IsExist returns a boolean indicating if the file associated with the checksum
@@ -63,12 +65,12 @@ func (c *Checksum) IsExist() bool {
 
 // Verify verifies all checksums contained in SFV and returns true if all
 // checksums are correct.
-func (s *SFV) Verify() (bool, error) {
+func (s *SFV) Verify(polynomial uint32) (bool, error) {
 	if len(s.Checksums) == 0 {
 		return false, fmt.Errorf("no checksums found in %s", s.Path)
 	}
 	for _, c := range s.Checksums {
-		ok, err := c.Verify()
+		ok, _, err := c.Verify(polynomial)
 		if err != nil {
 			return false, err
 		}
