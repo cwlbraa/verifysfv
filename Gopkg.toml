@@ -22,4 +22,5 @@
 
 
 [[constraint]]
-  name = "github.com/gosuri/uiprogress"
+  name = "gopkg.in/cheggaaa/pb.v2"
+  version = "2.0.4"

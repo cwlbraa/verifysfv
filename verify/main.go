@@ -9,7 +9,8 @@ import (
 	"sync"
 
 	"github.com/cwlbraa/verifysfv"
-	"github.com/gosuri/uiprogress"
+
+	pb "gopkg.in/cheggaaa/pb.v2"
 )
 
 func main() {
@@ -23,7 +24,7 @@ func main() {
 	}
 
 	count := len(parsed.Checksums)
-	bar := uiprogress.AddBar(count).AppendCompleted().PrependElapsed()
+	bar := pb.StartNew(count)
 	checksums := make(chan verifysfv.Checksum, count)
 	errs := make(chan error, count) // nil errors indicate success
 	var wg sync.WaitGroup
@@ -32,7 +33,7 @@ func main() {
 		go func() {
 			for checksum := range checksums {
 				success, result, err := checksum.Verify(crc32.Castagnoli)
-				bar.Incr()
+				bar.Increment()
 
 				if !success && err == nil {
 					errs <- fmt.Errorf("corruption: expected %x but computed %x for %s\n",
@@ -46,7 +47,6 @@ func main() {
 		}()
 	}
 
-	uiprogress.Start()
 	for _, chk := range parsed.Checksums {
 		checksums <- chk
 	}
