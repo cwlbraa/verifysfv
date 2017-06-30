@@ -20,7 +20,7 @@ var memory = flag.Int("mem", runtime.NumCPU()*4, "kBs of memory to use as file b
 
 func main() {
 	flag.Usage = func() {
-		fmt.Printf("verifysfv: a tiny, fast, almost always io-bound tool for verifying sfv files\n\n")
+		fmt.Printf("verifysfv: a tiny, fast, almost-always-io-bound tool for verifying sfv files\n\n")
 		fmt.Printf("Usage: verify [options] fileManifest.sfv\n\n")
 		fmt.Printf("options:\n")
 		flag.PrintDefaults()
