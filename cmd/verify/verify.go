@@ -13,18 +13,29 @@ import (
 	"github.com/gosuri/uiprogress"
 )
 
-func main() {
-	poly := flag.String("poly", "crc32c", "polynomial: defaults to crc32c (Castagnoli), alternatives: ieee, koopman")
-	memory := flag.Int("mem", runtime.NumCPU()*4, "kBs of memory to read files into")
-	flag.Parse()
-	verifysfv.SetBufSize(*memory * 1024 / runtime.NumCPU())
-	polynomial := parsePoly(*poly)
+// command line option configuration
+var poly = flag.String("poly", "crc32c", "crc base polynomial: crc32c (Castagnoli), ieee, or koopman")
+var parallelism = flag.Int("j", runtime.NumCPU(), "# of parallel workers to spin up")
+var memory = flag.Int("mem", runtime.NumCPU()*4, "kBs of memory to use as file buffers")
 
+func main() {
+	flag.Usage = func() {
+		fmt.Printf("verify: a tiny, fast, io-bound tool for verifying sfv files\n\n")
+		fmt.Printf("Usage: verify [options] fileManifest.sfv\n\n")
+		fmt.Printf("options:\n")
+		flag.PrintDefaults()
+	}
+	// parse and verify args
+	flag.Parse()
 	if len(flag.Args()) < 1 {
-		fmt.Println("please provide an sfv file to verify")
+		flag.Usage()
 		os.Exit(1)
 	}
 	sfvFilepath := flag.Args()[0]
+	polynomial := parsePoly(*poly)
+	verifysfv.SetBufSize(*memory * 1024 / *parallelism)
+
+	// open and parse sfv file
 	parsed, err := verifysfv.Read(sfvFilepath)
 	if err != nil {
 		log.Fatal(err)
@@ -37,7 +48,7 @@ func main() {
 	errs := make(chan error, count) // nil errors indicate success
 	var wg sync.WaitGroup
 
-	for i := 0; i < runtime.NumCPU(); i++ {
+	for i := 0; i < *parallelism; i++ {
 		wg.Add(1)
 		go func() {
 			for checksum := range checksums {
@@ -88,8 +99,7 @@ func parsePoly(in string) uint32 {
 	case "koop":
 		return crc32.Koopman
 	default:
-		fmt.Println("unsupported polynomial")
-		os.Exit(1)
+		log.Fatalf("unsupported polynomial %s", in)
 	}
 	return 0
 }
