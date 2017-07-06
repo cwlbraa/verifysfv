@@ -40,14 +40,17 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	count := len(parsed.Checksums)
-	bar := uiprogress.AddBar(count).AppendCompleted().PrependElapsed()
 
+	// start up progress bar
+	bar := uiprogress.AddBar(count).AppendCompleted().PrependElapsed()
+	uiprogress.Start()
+	// initialize threadsafe data structures
 	checksums := make(chan verifysfv.Checksum, count)
 	errs := make(chan error, count) // nil errors indicate success
 	var wg sync.WaitGroup
 
+	// fire off worker threads
 	for i := 0; i < *parallelism; i++ {
 		wg.Add(1)
 		go func() {
@@ -67,7 +70,7 @@ func main() {
 		}()
 	}
 
-	uiprogress.Start()
+	// feed data to worker threads
 	for _, chk := range parsed.Checksums {
 		checksums <- chk
 	}
@@ -79,6 +82,7 @@ func main() {
 		close(errs)
 	}()
 
+	// detect & print errors
 	exitCode := 0
 	for err := range errs {
 		if err != nil {
